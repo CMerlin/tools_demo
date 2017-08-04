@@ -1,0 +1,2 @@
+<?xml version="1.0"?>
+<PatientRecords><hospital><name>shezhHos</name><phone>12345678901</phone><email>1079843691@qq.com</email><logPath>./hospitalInformation.xml</logPath></hospital><person><name>AJke</name><phone>11111111</phone><email>A1079843691@qq.com2</email><logPath>./hospitalInformation.xml</logPath></person><patient><ID>11111111</ID><name>BJke</name><birth>3-AJke</birth><procedureType>./hospitalInformation.xml</procedureType><procedureDate>B1079843691@qq.com2</procedureDate></patient></PatientRecords>
