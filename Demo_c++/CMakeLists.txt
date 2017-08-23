@@ -10,7 +10,7 @@ set(CMAKE_C_COMPILER arm-linux-g++)
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 #编译的选项
 set(CMAKE_C_FLAGS "-Wall -g")
-
+add_compile_options(-std=c++11)
 #add_definitions(-DUSING_TIMERFD)
 #add_definitions(-DUSING_ZIP)
 

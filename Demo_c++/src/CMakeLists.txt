@@ -1,4 +1,4 @@
-add_executable(printInfo ./main.cc ./print.cc)
+add_executable(printInfo ./main.cpp ./print.cpp)
 #add_executable(mainStarter ./mainStarter/main.cc ./mainStarter/Starter.cc)
 #target_link_libraries(mainStarter gdlp_base gdlp_adpters)
 #install(TARGETS mainStarter  DESTINATION bin)
