@@ -44,13 +44,33 @@ int main(int argc, const char *argv[])
 	//输出结果为：2015082415:08:35.789772 Hello!
 #endif
 
-#if 1 /*获取进程和线程号*/
+#if 0 /*获取进程和线程号*/
 	char buffer[65] = {0};
 	sprintf(buffer, "%d.%lu", getpid(), pthread_self());
 	std::cout<<"buffer="<<buffer<<std::endl;
+	parsingRTPPacket((unsigned char*)buffer, 12);
 #endif
 
-	parsingRTPPacket((unsigned char*)buffer, 12);
+#if 0 /*string字符串的处理*/
+	string str("hello");
+	std::cout<<"str="<<str<<std::endl;
+	str.erase();
+	std::cout<<"str="<<str<<std::endl;
+#endif
+
+#if 0
+	#define RTSP_FIELD "rtsp."
+	const char kPort[] = RTSP_FIELD"port";
+	std::cout<<"kPort:"<<kPort<<std::endl;
+#endif
+
+#if 1 //decltyp的功能相当于C中的typedef 关键字
+	int intData = 5;
+	string str("hello");
+	decltype(intData) dintData = 10;
+	decltype(str) dStr("good");
+	std::cout<<"dintData="<<dintData<<" dStr="<<dStr<<endl;
+#endif
 
 	return 0;
 }
