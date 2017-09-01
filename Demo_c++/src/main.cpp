@@ -53,9 +53,12 @@ class Compare
 	private:  
 		elemtype x, y; 
 	public:  
-		Compare(elemtype a = 0, elemtype b = 0):x(a), y(b){}//创建构造函数，默认值为0  
+		Compare(elemtype a = 0, elemtype b = 0):x(a), y(b){
+			std::cout<<"["<<__func__<<"]:construction......"<<std::endl;	
+		}//创建构造函数，默认值为0  
 		elemtype Max();  
 		elemtype Min();
+		~Compare(){};
 };  
 
 	template <class elemtype>//由于方法在类外定义，需要指定以下函数也使用的虚拟数据类型  
@@ -69,6 +72,32 @@ elemtype Compare<elemtype>::Min()//同上
 {  
 	return ((x < y)? x:y);  
 }  
+#endif
+
+#if 1 /*普通类的定义*/
+class Test
+{
+	private:
+		string str;
+	public:
+		Test(){
+			str = "hello";
+			std::cout<<"["<<__func__<<"]:construction......"<<std::endl;	
+		}
+		Test(string pStr){
+			str = pStr;
+			std::cout<<"["<<__func__<<"]:construction......"<<std::endl;	
+		}
+		~Test(){
+			std::cout<<"["<<__func__<<"]:destructor......"<<std::endl;
+		}
+		void setSTR(string pstr){
+			str = pstr;
+		}
+		void print(){
+			std::cout<<"["<<__func__<<"]:str="<<str<<std::endl;	
+		}
+};
 #endif
 
 int main(int argc, const char *argv[])
@@ -101,7 +130,7 @@ int main(int argc, const char *argv[])
 	std::cout<<"kPort:"<<kPort<<std::endl;
 #endif
 
-#if 0 //decltyp的功能相当于C中的typedef 关键字
+#if 1 //decltyp的功能相当于C中的typedef 关键字
 	int intData = 5;
 	string str("hello");
 	decltype(intData) dintData = 10;
@@ -109,6 +138,17 @@ int main(int argc, const char *argv[])
 	std::cout<<"dintData="<<dintData<<" dStr="<<dStr<<endl;
 	dStr = str;
 	std::cout<<"dintData="<<dintData<<" dStr="<<dStr<<endl;
+
+	//Test TObj("this is test");
+	//TObj.print();
+	//Test TObj1;
+	//TObj1.print();
+
+	Test *pt = new Test[3];
+	pt[0].setSTR("good");
+	pt[0].print();
+	pt[1].print();
+	pt[2].print();
 #endif
 
 #if 0 /*模板函数的使用*/
@@ -120,7 +160,7 @@ int main(int argc, const char *argv[])
 	std::cout<<"ret="<<ret<<endl;
 #endif
 
-#if 1 /*模板类的使用*/
+#if 0 /*模板类的使用*/
 	int a = 3, b = 4;
 	Compare<int> cmpObj(a,b);//使用类模板定义对象  
 	cout << "min = " << cmpObj.Min() << endl << "max = " << cmpObj.Max() << endl;
@@ -128,18 +168,6 @@ int main(int argc, const char *argv[])
 	string str1 = "abc", str2 = "bcd";
 	Compare<string> strObj(str1, str2);//使用类模板定义对象  
 	cout << "min = " << strObj.Min() << endl << "max = " << strObj.Max() << endl;
-#if 0
-int main(int argc, char const *argv[])  
-{  
-	elmtpe a,b;  
-	cout << "input 2 numbers:" << endl;  
-	cin >> a >> b;  
-	Compare<elmtpe> cmp(a,b);//使用类模板定义对象  
-	cout << "min = " << cmp.Min() << endl << "max = " << cmp.Max() << endl;  
-	return 0;  
-} 
-#endif
-
 #endif
 
 	return 0;
