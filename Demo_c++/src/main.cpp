@@ -1,4 +1,8 @@
 #include "print.h"
+
+#include <sys/time.h>
+
+#include <chrono>
 #if 0
 #include <time.h>
 #include <sys/time.h>
@@ -100,6 +104,51 @@ class Test
 };
 #endif
 
+#if 0
+int gettimeofday(struct timeval *tp, void *tzp) {
+	time_t clock;
+	struct tm tm;
+	SYSTEMTIME wtm;
+	GetLocalTime(&wtm);
+	tm.tm_year = wtm.wYear - 1900;
+	tm.tm_mon = wtm.wMonth - 1;
+	tm.tm_mday = wtm.wDay;
+	tm.tm_hour = wtm.wHour;
+	tm.tm_min = wtm.wMinute;
+	tm.tm_sec = wtm.wSecond;
+	tm.tm_isdst = -1;
+	clock = mktime(&tm);
+	tp->tv_sec = clock;
+	tp->tv_usec = wtm.wMilliseconds * 1000;
+	return (0);
+}
+#endif
+
+/*获取当前系统时间，单位是毫秒*/
+unsigned int getCurTimeMillisecond() {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
+/*获取当前的系统时间，返回的是时间字符串*/
+int getCurTime(char *systime)
+{
+	memset(systime, 0, strlen(systime));
+	time_t now;
+	now = time(NULL);
+	struct tm *tm = localtime(&now);
+	struct timeval tv;
+	struct timezone tz;
+	gettimeofday(&tv, &tz);
+
+	//sprintf(systime, "%d-%02d-%02d %02d:%02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+	sprintf(systime, "%d%02d%02d %02d:%02d:%02d.%ld", 
+			tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
+	
+	return 0;
+}
+
 int main(int argc, const char *argv[])
 {
 #if 0
@@ -130,7 +179,7 @@ int main(int argc, const char *argv[])
 	std::cout<<"kPort:"<<kPort<<std::endl;
 #endif
 
-#if 1 //decltyp的功能相当于C中的typedef 关键字
+#if 0 //decltyp的功能相当于C中的typedef 关键字
 	int intData = 5;
 	string str("hello");
 	decltype(intData) dintData = 10;
@@ -168,6 +217,20 @@ int main(int argc, const char *argv[])
 	string str1 = "abc", str2 = "bcd";
 	Compare<string> strObj(str1, str2);//使用类模板定义对象  
 	cout << "min = " << strObj.Min() << endl << "max = " << strObj.Max() << endl;
+#endif
+
+#if 1 /*C++时间的使用*/
+	//std::cout<<"["<<__func__<<"]:"<<" line:"<<__LINE__<<std::endl;
+	//int ret = getCurTimeMillisecond();
+	//std::cout<<"curTime="<<ret<<std::endl;
+	//chrono::milliseconds(millisecond_sleep);
+	char timeCur[64] = {0};
+	getCurTime(timeCur);
+	std::cout<<"["<<__func__<<"]:now="<<timeCur<<" line:"<<__LINE__<<std::endl;
+	//chrono::milliseconds(1000000000);
+	usleep(1000*1000);
+	getCurTime(timeCur);
+	std::cout<<"["<<__func__<<"]:now="<<timeCur<<" line:"<<__LINE__<<std::endl;
 #endif
 
 	return 0;
