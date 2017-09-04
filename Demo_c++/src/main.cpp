@@ -3,6 +3,8 @@
 #include <sys/time.h>
 
 #include <chrono>
+#include <memory>
+
 #if 0
 #include <time.h>
 #include <sys/time.h>
@@ -149,6 +151,103 @@ int getCurTime(char *systime)
 	return 0;
 }
 
+#if 1
+#include <stdio.h>
+#include <iostream>
+#include <string>
+#include <unordered_map>
+using namespace std;
+
+void useUnorderedMap(){
+	int count = 0;
+    unordered_map<string,int> months;
+    //插入数据
+    cout<<"insert data"<<endl;
+    months["january"]=31;
+    months["february"] = 28;
+    months["march"] = 31;
+    months["september"] = 30;
+
+    //直接使用key值访问键值对，如果没有访问到，返回0
+    cout<<"[merlin]:"<<"mapSize="<<(months.size())<<endl;
+    cout<<"[merlin]:"<<"september->"<<months["september"]<<endl;
+    cout<<"[merlin]:"<<"xx->"<<months["xx"]<<endl;
+	cout<<"[merlin]:"<<"mapSize="<<(months.size())<<endl;
+	cout<<"----------------------------------------------------"<<endl;
+	decltype(months) mapCopy;
+	mapCopy = months;
+	cout<<"[merlin]:"<<"mapSize="<<(mapCopy.size())<<endl;
+	cout<<"[merlin]:"<<"september->"<<mapCopy["september"]<<endl;
+	cout<<"[merlin]:"<<"xx->"<<mapCopy["xx"]<<endl;
+	cout<<"[merlin]:"<<"mapSize="<<(mapCopy.size())<<endl;
+
+	count = 0;
+	for (auto &pr : mapCopy) {
+		//auto reader = pr.second.lock();
+		int reader = pr.second;
+		count++;
+		cout<<"[merlin]:count="<<count<<" val="<<reader<<endl;
+	}
+	cout<<"[merlin]:@size="<<(mapCopy.size())<<endl;
+
+
+
+	typedef unordered_map<int,int> mymap;
+	mymap mapping;
+	mymap::iterator it;
+	mapping[2]=110;
+    mapping[5]=220;
+    const int x=2;const int y=3;//const是一个C语言（ANSI C）的关键字，它限定一个变量不允许被改变,产生静态作用，提高安全性。
+
+    //寻找是否存在键值对
+    //方法一：
+    cout<<"find data where key=2"<<endl;
+    if( mapping.find(x)!=mapping.end() ){//找到key值为2的键值对
+        cout<<"get data where key=2! and data="<<mapping[x]<<endl;
+    }
+    cout<<"find data where key=3"<<endl;
+    if( mapping.find(y)!=mapping.end() ){//找到key值为3的键值对
+        cout<<"get data where key=3!"<<endl;
+    }
+    //方法二：
+    it=mapping.find(x);
+    printf("find data where key=2 ?  %d\n",(it==mapping.end()));
+    it=mapping.find(y);
+    printf("find data where key=3 ?  %d\n",(it==mapping.end()));
+
+    //遍历hash table
+    for( mymap::iterator iter=mapping.begin();iter!=mapping.end();iter++ ){
+        cout<<"key="<<iter->first<<" and value="<<iter->second<<endl;
+    }
+
+    system("pause");
+}
+
+#endif
+
+#if 1 /*智能指针和weak_ptr的使用*/
+int test_share_ptr()
+{
+	//Test 
+	shared_ptr<Test> sptest(new Test("Obj1"));
+	weak_ptr<Test> wptest(sptest);
+	weak_ptr<Test> wptest2(sptest);
+	shared_ptr<Test> sptemp = wptest.lock();
+	shared_ptr<Test> sptemp2 = wptest2.lock();
+	sptemp->print();
+	sptemp->setSTR("1-str1");
+	sptemp->print();
+	std::cout<<"weak2-------------"<<std::endl;
+	sptemp2->print();
+	std::cout<<"object2-------------"<<std::endl;
+	Test test2 = *sptest;
+	test2.print();
+	//std::cout<<"[merlin]:val="<<(sptemp->print())<<std::endl;
+	
+	return 0;
+}
+#endif
+
 int main(int argc, const char *argv[])
 {
 #if 0
@@ -219,7 +318,7 @@ int main(int argc, const char *argv[])
 	cout << "min = " << strObj.Min() << endl << "max = " << strObj.Max() << endl;
 #endif
 
-#if 1 /*C++时间的使用*/
+#if 0 /*C++时间的使用*/
 	//std::cout<<"["<<__func__<<"]:"<<" line:"<<__LINE__<<std::endl;
 	//int ret = getCurTimeMillisecond();
 	//std::cout<<"curTime="<<ret<<std::endl;
@@ -232,6 +331,9 @@ int main(int argc, const char *argv[])
 	getCurTime(timeCur);
 	std::cout<<"["<<__func__<<"]:now="<<timeCur<<" line:"<<__LINE__<<std::endl;
 #endif
+
+	//useUnorderedMap(); /*unordered_map对象的使用*/
+	test_share_ptr(); /*智能指针的使用*/
 
 	return 0;
 }
