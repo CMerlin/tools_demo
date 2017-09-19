@@ -1,4 +1,7 @@
 #include "print.h"
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <sys/time.h>
 
@@ -247,6 +250,55 @@ int test_share_ptr()
 	return 0;
 }
 #endif
+
+/*********************************************************************
+ * Description:获取客户端的IP
+ * Input fd:套接字文件描述符
+ ********************************************************************/
+int getPeerAddr(int fd)
+{
+	int port = 0;
+	char ipAddr[64] = {0};
+	struct sockaddr addr;
+	struct sockaddr_in* addr_v4;
+	socklen_t addr_len = sizeof(addr);
+	if (0 > getpeername(fd, &addr, &addr_len)){
+		printf("[%s][Error]:info=%s line:%d\n", __func__, strerror(errno), __LINE__);
+	}
+	if (addr.sa_family == AF_INET) {
+		addr_v4 = (sockaddr_in*) &addr;
+		strcpy(ipAddr, (inet_ntoa(addr_v4->sin_addr))); /*IP*/
+		port = ntohs(addr_v4->sin_port); /*port*/
+	}
+	printf("[%s]:addr=%s-%d line:%d\n", __func__, ipAddr, port, __LINE__);
+
+	return 0;
+}
+
+/*********************************************************************
+ * Description:获取本端口的地址
+ * Input fd:套接字文件描述符
+ *********************************************************************/
+int getLocalAddr(int fd)
+{
+	int port = 0;
+	char ipAddr[64] = {0};
+	struct sockaddr addr;
+	struct sockaddr_in* addr_v4;
+	socklen_t addr_len = sizeof(addr);
+	if (0 > getsockname(fd, &addr, &addr_len)){
+		printf("[%s][Error]:info=%s line:%d\n", __func__, strerror(errno), __LINE__);
+		return -1;
+	}
+	if (addr.sa_family == AF_INET) {
+		addr_v4 = (sockaddr_in*) &addr;
+		strcpy(ipAddr, (inet_ntoa(addr_v4->sin_addr))); /*IP*/
+		port = ntohs(addr_v4->sin_port); /*port*/
+	}
+	printf("[%s]:addr=%s-%d line:%d\n", __func__, ipAddr, port, __LINE__);
+
+	return 0;
+}
 
 int main(int argc, const char *argv[])
 {
