@@ -1,5 +1,0 @@
-/home/ubuntu/DiskSdb/gitHub/tools_demo/5_TCPServerAndClient/build/CMakeFiles/edit_cache.dir
-/home/ubuntu/DiskSdb/gitHub/tools_demo/5_TCPServerAndClient/build/CMakeFiles/rebuild_cache.dir
-/home/ubuntu/DiskSdb/gitHub/tools_demo/5_TCPServerAndClient/build/src/CMakeFiles/edit_cache.dir
-/home/ubuntu/DiskSdb/gitHub/tools_demo/5_TCPServerAndClient/build/src/CMakeFiles/rebuild_cache.dir
-/home/ubuntu/DiskSdb/gitHub/tools_demo/5_TCPServerAndClient/build/src/CMakeFiles/TCP_demo.dir

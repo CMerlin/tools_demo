@@ -1,1 +1,0 @@
-gcc  -pthread   CMakeFiles/TCP_demo.dir/test_Demo.c.o CMakeFiles/TCP_demo.dir/client_test.c.o CMakeFiles/TCP_demo.dir/print.c.o CMakeFiles/TCP_demo.dir/io_process.c.o CMakeFiles/TCP_demo.dir/socket_use.c.o CMakeFiles/TCP_demo.dir/extern_tools.c.o  -o ../bin/TCP_demo -rdynamic 

@@ -1,6 +1,7 @@
 #!/bin/sh
 echo "clean environment!"
 rm ./TCP_demo
+killall -9 TCP_demo
 killall -9 TCPServer_demo
 killall -9 TCPClient_demo
 

@@ -55,37 +55,46 @@ sint32 setConnetStatusTCPC(int status)
 	return 0;
 }
 
-/********************************************************************************
- * Description:获取本机的端口号
- *********************************************************************************/
-int getLocalIP(char *zeroIP)
+/*****************************************************************************
+* Description:得到主机的地址信息
+* Output ipAddr:获取到的IP地址
+* Return:0-成功 -1-失败
+*******************************************************************************/
+int getHostAddr(char *ipAddr)
 {
-	//return -1;
-	int i = 0;
-	char hname[128] = {0}, *localIP = NULL;
-	struct hostent *hent;
-	if(NULL == zeroIP){
-		printf("[%s]:in param is wrong! line:%d\n", __func__, __LINE__);
+	char *ptr = NULL, **pptr;
+	char str[128] = {0},  hname[128] = {0};
+	struct hostent *hptr = NULL;
+
+	/* 获取主机名 */
+	if(0 > gethostname(hname, sizeof(hname))){
+		trace(ERROR, "[%s][Error]:info=%s line:%d\n", __func__, strerror(errno), __LINE__);
 		return -1;
 	}
-
-	memset(zeroIP, 0, strlen(zeroIP));
-	gethostname(hname, sizeof(hname));
-	hent = gethostbyname(hname);
-	for(i = 0; hent->h_addr_list[i]; i++) {
-		localIP = inet_ntoa(*(struct in_addr*)(hent->h_addr_list[i]));
-		if(NULL != localIP){
-			memcpy(zeroIP, localIP, 64);
-		}
+	/* 获取主机的网络配置信息 */
+	if((hptr=gethostbyname(hname))==NULL){
+		trace(ERROR, "[%s][Error]:info=%s line:%d\n", __func__, strerror(errno), __LINE__);
+		return -1;
+	}
+	trace(DEBUG, "[%s]:real hostname:%s\n", __func__, hptr->h_name, __LINE__);//正式主机名
+	/* 遍历所有的主机别名 */
+	for(pptr=hptr->h_aliases; *pptr!=NULL; pptr++){
+		trace(DEBUG, "[%s]:alias name:%s  line:\n", __func__,  (*pptr),__LINE__);
+	}
+	/* 判断socket类型 */
+	switch(hptr->h_addrtype)
+	{
+	case AF_INET:  //IP类为AF_INET
+		pptr=hptr->h_addr_list; //IP地址数组
+		for(;*pptr!=NULL;pptr++){
+			inet_ntop(hptr->h_addrtype, (*pptr), ipAddr, 64);
+			trace(DEBUG, "[%s]:ipaddr=%s line:%d\n", __func__, ipAddr, __LINE__); //inet_ntop转换为点分十进制	
+		}	
+		break;
+	default:
+		trace(DEBUG, "[%s]:unknown address type line:%d\n", __func__, __LINE__);
 		break;
 	}
-#if 0
-	trace(DEBUG, "[%s]:hostname: %s/naddress list: ", __func__, hent->h_name);
-	for(i = 0; hent->h_addr_list[i]; i++) {
-		printf("%s\n", inet_ntoa(*(struct in_addr*)(hent->h_addr_list[i])));
-	}
-	printf("\n");
-#endif
 	return 0;
 }
 
@@ -410,33 +419,36 @@ int serverTCP()
 	char ip[64] = {"127.0.0.1"};
 
 	trace(DEBUG, "[%s]:begin line:%d\n", __func__, __LINE__);
+#if 1
 	/*获取本机ip*/
 	char localIP[64] = {0};
-	if(0 > getLocalIP(localIP)){
+	if(0 > (getHostAddr(localIP))){
 		trace(ERROR, "[%s]:get local ip failed! line:%d\n", __func__, __LINE__);
 	}else{
 		memset(ip, 0, strlen(ip));
 		memcpy(ip, localIP, strlen(localIP));
 	}
-
-	trace(DEBUG, "[%s]:local IP=%s port=%d line:%d\n", __func__, ip, port, __LINE__);
+#endif
+	trace(DEBUG, "[%s]:server addr:%s-%d line:%d\n", __func__, ip, port, __LINE__);
 	/*创建套接字*/
 	sfd= createSocket(AF_INET, SOCK_STREAM, 0);
 	if(0 >= sfd){
 		trace(ERROR, "[%s]:create socket failure! line:%d\n", __func__, __LINE__);
 		return -1;
 	}
-	trace(DEBUG, "[%s]:local----------------  line:%d\n", __func__, __LINE__);
 	/*bind套接字*/
-	bindSocket(sfd, AF_INET, ip, port);
+	if(0 > bindSocket(sfd, AF_INET, ip, port)){
+		return -1;
+	}
 	/*监听套接字*/
 	if(listenSocket(sfd, 3) < 0){
 		trace(ERROR, "[%s]:listen timeout! line:%d\n", __func__, __LINE__);
 		return -1;
 	}
 	
+	trace(DEBUG, "[%s]:server addr:%s-%d fd:%d line:%d\n", __func__, ip, port,  sfd, __LINE__);
 	while(1){
-		//trace(DEBUG, "[%s]:local----------------  line:%d\n", __func__, __LINE__);
+		trace(DEBUG, "[%s]:local----------------  line:%d\n", __func__, __LINE__);
 		/*接收连接请求*/
 		memset(&clientAddr, 0, sizeof(clientAddr));
 		cliSocket = acceptSocket(sfd, &clientAddr);
@@ -444,7 +456,6 @@ int serverTCP()
 			usleep(3*1000*1000);
 			trace(ERROR, "[%s][Error]:accept failure re=%d line:%d\n", __func__, ret, __LINE__);
 			continue;
-			//sleep(5);
 		}
 		trace(DEBUG, "[%s]:new conenct socket=%d *********************** line:%d\n", __func__, cliSocket, __LINE__);
 		memset(&ClientAttr, 0, sizeof(ClientAttr));
@@ -472,7 +483,7 @@ int clientTCP()
 	trace(DEBUG, "[%s]:begin line:%d\n", __func__, __LINE__);
 	/*获取本机ip*/
 	char localIP[64] = {0};
-	if(0 > getLocalIP(localIP)){
+	if(0 > getHostAddr(localIP)){
 		trace(ERROR, "[%s]:get local ip failed! line:%d\n", __func__, __LINE__);
 	}else{
 		memset(ip, 0, strlen(ip));
