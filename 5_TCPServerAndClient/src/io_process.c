@@ -9,6 +9,60 @@
  * *************************************************************/
 #include "common.h"
 
+/***************************************************************************
+* Description:得到文件的属性信息
+****************************************************************************/
+int getFileAttr(char *filePath, char* dest)
+{
+	 struct stat attr;
+	if(0 > (stat(filePath, &attr))){
+		return -1;
+	}
+	sprintf(dest, "no:%lu size=%ld st_atime=%ld st_mtime:%ld st_ctime=%ld", (attr.st_ino), (attr.st_size), (attr.st_atime), (attr.st_mtime), (attr.st_ctime));
+	return 0;
+}
+
+/*****************************************************************************
+ * Description:递归的打印所有目录文件的中文件信息
+ * Input :一级目录文件的文件路径
+ *****************************************************************************/
+int showDirAttr(char *dirPath)
+{
+	DIR *pDir = NULL;
+	struct dirent *ent = NULL;
+	char subDir[1024] = {0}, buffer[1024] = {0}, fileAttr[1024] = {0};
+
+	if(NULL == dirPath){
+		return -1;
+	}
+	/* 打开目标文件 */
+	pDir = opendir(dirPath);
+	if(NULL == pDir){
+		return -1;
+	}
+	trace(DEBUG, "[%s]:openDir=%s ************************* line:%d\n", __func__, dirPath, __LINE__);
+	/* 读取所有的子文件 */
+	while((ent = readdir(pDir))!=NULL)
+	{
+		/* 递归的处理目录文件 */
+		if(ent->d_type & DT_DIR){
+			if(strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0){
+				continue; /* 不对隐藏文件进行处理 */
+			}
+			sprintf(subDir,"%s/%s",dirPath,ent->d_name);
+			showDirAttr(dirPath);
+		}
+		else{
+			sprintf(subDir,"%s/%s",dirPath,ent->d_name);
+			getFileAttr(subDir, fileAttr);
+			sprintf(buffer, "no=%lu name:%s type=%d attr=%s", (ent->d_ino), (ent->d_name ), (int)(ent->d_type), fileAttr);
+			trace(DEBUG, "[%s]:%s line:%d\n", __func__, buffer,  __LINE__);
+		}
+	}
+
+	return 0;
+}
+
 /******************************************************************************
  * Description：读取配置文件，获取http服务器端口号
  * Input path：配置文件路径

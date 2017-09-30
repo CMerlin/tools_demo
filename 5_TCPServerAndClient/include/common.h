@@ -54,6 +54,7 @@
 #include <pthread.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
+#include <dirent.h>
 #endif
 
 /*基础数据类型的定义*/
@@ -224,5 +225,7 @@ extern int dealWirhRtspCmd(RTSP_ATTR *p_rtspAttr, RTSP_MSG_ATTR *p_msgAttr);
 extern int initRTSPServerInfo();
 extern int setRTSPServerInfo(USERINFO * attr);
 extern int getRTSPServerInfo(USERINFO * attr);
+/* IO 操作相关*/
+extern int showDirAttr(char *dirPath);
 #endif
 
