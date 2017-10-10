@@ -226,6 +226,8 @@ extern int initRTSPServerInfo();
 extern int setRTSPServerInfo(USERINFO * attr);
 extern int getRTSPServerInfo(USERINFO * attr);
 /* IO 操作相关*/
-extern int showDirAttr(char *dirPath);
+extern void showDirAttr(char *dir, int depth);
+/* 公共函数 */
+extern int time_utoc(time_t src_time, char *dest_time, int rank);
 #endif
 

@@ -10,57 +10,61 @@
 #include "common.h"
 
 /***************************************************************************
-* Description:得到文件的属性信息
-****************************************************************************/
-int getFileAttr(char *filePath, char* dest)
+ * Description:得到文件的属性信息
+ ****************************************************************************/
+int getFileAttr(struct dirent *entry, char *filePath, char* dest)
 {
-	 struct stat attr;
+	char buffer[512] = {0}, s_time[32] = {0}, m_time[32] = {0}, c_time[32] = {0};
+	struct stat attr;
 	if(0 > (stat(filePath, &attr))){
 		return -1;
 	}
-	sprintf(dest, "no:%lu size=%ld st_atime=%ld st_mtime:%ld st_ctime=%ld", (attr.st_ino), (attr.st_size), (attr.st_atime), (attr.st_mtime), (attr.st_ctime));
+	time_utoc((attr.st_atime), s_time, 0);
+	time_utoc((attr.st_mtime), m_time, 0);
+	time_utoc((attr.st_ctime), c_time, 0);
+	sprintf(buffer, "no=%lu name:%s type=%d", (entry->d_ino), (entry->d_name ), (int)(entry->d_type));
+	//sprintf(dest, "attr=%s no:%lu size=%ld st_atime=%ld st_mtime:%ld st_ctime=%ld", buffer, (attr.st_ino), (attr.st_size), (attr.st_atime), (attr.st_mtime), (attr.st_ctime));
+	sprintf(dest, "attr=%s no:%lu size=%ld st_atime=%s st_mtime:%s st_ctime=%s", buffer, (attr.st_ino), (attr.st_size), s_time, m_time, c_time);
+
 	return 0;
 }
 
 /*****************************************************************************
  * Description:递归的打印所有目录文件的中文件信息
- * Input :一级目录文件的文件路径
+ * Input :dir-文件的路径 depth-打印的时候文件的缩进
  *****************************************************************************/
-int showDirAttr(char *dirPath)
+void showDirAttr(char *dir, int depth)
 {
-	DIR *pDir = NULL;
-	struct dirent *ent = NULL;
-	char subDir[1024] = {0}, buffer[1024] = {0}, fileAttr[1024] = {0};
+	char fileAttr[1024] = {0}, subDir[256] = {0};
+	DIR *dp;
+	struct dirent *entry;
+	struct stat statbuf;
 
-	if(NULL == dirPath){
-		return -1;
-	}
-	/* 打开目标文件 */
-	pDir = opendir(dirPath);
-	if(NULL == pDir){
-		return -1;
-	}
-	trace(DEBUG, "[%s]:openDir=%s ************************* line:%d\n", __func__, dirPath, __LINE__);
-	/* 读取所有的子文件 */
-	while((ent = readdir(pDir))!=NULL)
-	{
-		/* 递归的处理目录文件 */
-		if(ent->d_type & DT_DIR){
-			if(strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0){
-				continue; /* 不对隐藏文件进行处理 */
-			}
-			sprintf(subDir,"%s/%s",dirPath,ent->d_name);
-			showDirAttr(dirPath);
-		}
-		else{
-			sprintf(subDir,"%s/%s",dirPath,ent->d_name);
-			getFileAttr(subDir, fileAttr);
-			sprintf(buffer, "no=%lu name:%s type=%d attr=%s", (ent->d_ino), (ent->d_name ), (int)(ent->d_type), fileAttr);
-			trace(DEBUG, "[%s]:%s line:%d\n", __func__, buffer,  __LINE__);
-		}
+	if ((dp = opendir(dir)) == NULL) {
+		trace(ERROR, "[%s]:info=%s line:%d\n", __func__, strerror(errno), __LINE__);
+		return ;
 	}
 
-	return 0;
+	chdir(dir);
+	while ((entry = readdir(dp)) != NULL) {
+		lstat(entry->d_name, &statbuf);
+		if (S_ISDIR(statbuf.st_mode)) {
+			if ((strcmp(entry->d_name, ".") == 0) || (strcmp(entry->d_name, "..")) == 0 ){
+				continue;
+			} /* 不对隐藏文件进行处理 */
+			/* 获取文件属性信息并打印 */
+			sprintf(subDir,"./%s",entry->d_name);
+			getFileAttr(entry, subDir, fileAttr);
+			trace(DEBUG,"%*s%s/ %s\n", depth, "", entry->d_name, fileAttr);
+			showDirAttr(entry->d_name, depth+3); /* 递归的读取子目录文件 */
+		} else{
+			sprintf(subDir,"./%s",entry->d_name);
+			getFileAttr(entry, subDir, fileAttr);
+			trace(DEBUG,"%*s%s/ %s\n", depth, "", entry->d_name, fileAttr);
+		}
+	}
+	chdir("..");
+	closedir(dp);
 }
 
 /******************************************************************************

@@ -95,8 +95,10 @@ int demoTCPServerAndClient()
 **********************************************************************************************/
 int main()
 {
+	initPrintAndPthread(); /* 打印初始化和线程初始化 */
+	showDirAttr("./include", 0);
 	//demoTCPServerAndClient();
-#if 1
+#if 0
 	initPrintAndPthread(); /* 打印初始化和线程初始化 */
 	startTCPServer(); /* 启动TCP服务器端 */
 #endif

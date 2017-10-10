@@ -41,4 +41,28 @@ char* memstr(char* full_data, int full_data_len, char* substr)
     return NULL;  
 } 
 
+/******************************************************************************************************
+* Description:格式化时间，将time_t类型的时间变成字符串
+* input src_time:需要进行格式化的时间
+* input rank:1-精确到微秒 0-精确到分钟
+* outPut dest_time:已经格式化好的时间
+********************************************************************************************************/
+int time_utoc(time_t src_time, char *dest_time, int rank)
+{
+	struct timeval tv;
+	struct timezone tz;
+	struct tm *tm = localtime(&src_time);
+
+	gettimeofday(&tv, &tz);
+	if(1==rank){
+		sprintf(dest_time, "%d%02d%02d-%02d:%02d:%02d.%ld",
+			tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, tv.tv_usec);
+	}
+	else if(0 == rank){
+		sprintf(dest_time, "%d%02d%02d-%02d:%02d:%02d",
+			tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+	}
+
+	return 0;
+}
 
