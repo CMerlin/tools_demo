@@ -12,6 +12,15 @@ int main(int argc, const char *argv[])
 	printf("[%s]:Hello node.data:%d line:%d\n", __func__, node.data, __LINE__);
 	P_NODE listHead = NULL;
 	listHead = createHead(); /*创建头节点*/
+
+	for(i=6; i>0; i--){
+		insertNodeOnTail(listHead, i);
+	}
+	printData(listHead);
+	ascend_sort(listHead);
+	//sort(listHead);
+	printData(listHead);
+#if 0
 	for(i = 0; i < 6; i++)
 		insertNode(listHead, i); 
 	printData(listHead);
@@ -38,4 +47,5 @@ int main(int argc, const char *argv[])
 	printData(listHead);
 
 	return 0;
+#endif	
 }

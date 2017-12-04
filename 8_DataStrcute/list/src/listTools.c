@@ -106,6 +106,25 @@ int deleteNode(P_NODE head, int flag)
 	return 0;
 }
 
+/***************************************************************
+ * Description:在链表的尾部插入数据
+ * *************************************************************/
+int insertNodeOnTail(NODE *p_head, int value){
+	NODE *pCurNode = p_head;
+
+	while(NULL != (pCurNode->next)){
+		pCurNode = pCurNode->next;
+	}
+
+	NODE *pNode = (NODE*)malloc(sizeof(NODE));
+	pNode->data = value;
+	pCurNode->next = pNode;
+
+	printf("[%s]:cNode.data=%d line:%d\n", __func__, (pCurNode->data), __LINE__);
+
+	return 0;
+}
+
 /*
  * description:delete list head
  * */
@@ -227,6 +246,33 @@ P_NODE sort(P_NODE head)
     }  
     return head;   
 } 
+
+/*升序排序*/
+int ascend_sort(NODE *phead){
+	int count = 0, i = 0, temp = 0;
+	NODE *cNode = phead, *lNode = NULL;
+
+	while(NULL != cNode){
+		cNode = cNode->next;
+		count++;
+	}
+	for(i=0; i<count; i++){
+		cNode = phead->next;
+		lNode = phead;
+		while(NULL != cNode){
+			if((lNode->data) > (cNode->data))
+			{
+				temp = lNode->data;
+				lNode->data = cNode->data;
+				cNode->data = temp;
+			}
+			lNode = lNode->next;
+			cNode = cNode->next;
+		}
+	}
+
+	return 0;
+}
 
 #if 0
 int mppx(P_NODE head)

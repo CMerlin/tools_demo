@@ -22,4 +22,6 @@ extern int deleteNode(P_NODE head, int flag);
 extern P_NODE deleteListHead(P_NODE head);
 extern int rankList(P_NODE head);
 extern P_NODE sort(P_NODE head); 
+extern int insertNodeOnTail(NODE* p_head, int data);
+extern int ascend_sort(NODE *phead);
 #endif
