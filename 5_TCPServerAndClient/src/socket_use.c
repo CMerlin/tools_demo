@@ -123,7 +123,7 @@ int getPeerAddr(int fd)
 }
 
 /*********************************************************************
- * Description:获取本端口的地址
+ * Description:根据文件描述符，获取本端口的地址(IP和端口)
  * Input fd:套接字文件描述符
  *********************************************************************/
 int getLocalAddr(int fd)
@@ -164,6 +164,10 @@ int createSocket(const int family, const int type, const int protocol)
 	return fd;
 }
 
+/***************************************************************************************
+ * Description:bind套接字
+ * Input:fd-套接字文件描述符 family-协议类型 addr-字符串类型的IP地址 port-端口号 
+ * *************************************************************************************/
 int bindSocket(const int fd, const int family, char * addr, const int port)
 {
 	int result = 0;

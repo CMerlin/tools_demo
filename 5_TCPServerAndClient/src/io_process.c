@@ -24,7 +24,7 @@ int getFileAttr(struct dirent *entry, char *filePath, char* dest)
 	time_utoc((attr.st_ctime), c_time, 0);
 	sprintf(buffer, "no=%lu name:%s type=%d", (entry->d_ino), (entry->d_name ), (int)(entry->d_type));
 	//sprintf(dest, "attr=%s no:%lu size=%ld st_atime=%ld st_mtime:%ld st_ctime=%ld", buffer, (attr.st_ino), (attr.st_size), (attr.st_atime), (attr.st_mtime), (attr.st_ctime));
-	sprintf(dest, "attr=%s no:%lu size=%ld st_atime=%s st_mtime:%s st_ctime=%s", buffer, (attr.st_ino), (attr.st_size), s_time, m_time, c_time);
+	sprintf(dest, "attr=%s no:%lu size=%ld byte st_atime=%s st_mtime:%s st_ctime=%s", buffer, (attr.st_ino), (attr.st_size), s_time, m_time, c_time);
 
 	return 0;
 }

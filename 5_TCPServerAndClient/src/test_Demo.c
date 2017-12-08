@@ -95,9 +95,19 @@ int demoTCPServerAndClient()
 **********************************************************************************************/
 int main()
 {
+#if 1
+	broadcast_udp_server();
+	broadcast_udp_client();
+	multicast_udp_server();
+	multicast_udp_client();
+#endif
+
+#if 0
 	initPrintAndPthread(); /* 打印初始化和线程初始化 */
 	showDirAttr("./include", 0);
 	//demoTCPServerAndClient();
+#endif
+
 #if 0
 	initPrintAndPthread(); /* 打印初始化和线程初始化 */
 	startTCPServer(); /* 启动TCP服务器端 */

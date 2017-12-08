@@ -1,4 +1,4 @@
-add_executable(TCP_demo ./test_Demo.c ./client_test.c ./print.c
+add_executable(TCP_demo ./test_Demo.c ./client_test.c ./print.c ./udp_use.c
 	./io_process.c ./socket_use.c ./extern_tools.c)
 #target_link_libraries(pthread)
 #add_executable(mainStarter ./mainStarter/main.cc ./mainStarter/Starter.cc)

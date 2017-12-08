@@ -51,5 +51,9 @@ extern int createSocket(const int family, const int type, const int protocol);
 extern int listenSocket(const int fd, const int max);
 extern int acceptSocket(const int fd, struct sockaddr_in *clientAddr);
 extern int demoTCPServerAndClient();
+extern int broadcast_udp_server();
+extern int broadcast_udp_client();
+extern int multicast_udp_server();
+extern int multicast_udp_client();
 #endif
 
