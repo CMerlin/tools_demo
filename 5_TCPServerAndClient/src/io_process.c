@@ -229,4 +229,81 @@ sint32 packet_check(const void *buffer, PACKET_ATTR_S *attr)
 	return 0;
 }
 
+#if 1
+/***************************************************
+* Brief:将输入的文件拆分成两个文件
+* Input
+*****************************************************/
+int demo_cave_file(const char *inpath, const char *outpath, const int begin, const int size){
+	int fCount = 0, file_size = 0, ret = 0, buflen = 1024;
+	FILE *fpin = NULL, *fpout = NULL;
+	char buffer[1025] = {0}, newPath[256] = {0};
+
+	fpin = fopen(inpath, "r");
+	if(NULL == fpin){
+		printf("[%s]:info=%s inpath=%s LINE:%d\n", __func__, strerror(errno), inpath, __LINE__);
+		return -1;
+	}
+	fpout = fopen(outpath, "a+");
+	if(NULL == fpout){
+		printf("[%s]:info=%s outpath=%s LINE:%d\n", __func__, strerror(errno), outpath, __LINE__);
+		return -1;
+	}
+
+	if(0>fseek(fpin, begin, SEEK_SET)){
+		printf("[%s]:info=%s LINE:%d\n", __func__, strerror(errno), __LINE__);
+	}
+
+	while(1){
+		//usleep(1000*1000);
+		ret = fread(buffer, 1, buflen, fpin);
+		if(0 >= ret){
+			printf("[%s]:ret=%d info=%s LINE:%d\n", __func__, ret, strerror(errno), __LINE__);
+			break;
+		}
+		printf("[%s]:ret=%d line:%d\n", __func__, ret, __LINE__);
+		file_size += ret;	
+		ret = fwrite(buffer, 1, ret, fpout);
+		if(0 >= ret){
+			printf("[%s]:ret=%d info=%s LINE:%d\n", __func__, ret, strerror(errno), __LINE__);
+			break;
+		}
+		
+		if(size>file_size){
+			continue;
+		}
+		printf("[%s]:file_size=%d  size=%d line:%d\n", __func__, file_size, size, __LINE__);
+		fCount++;
+		sprintf(newPath, "%s_%d", outpath, fCount);
+		printf("[%s][Debug]:create new file path=%s line:%d\n", __func__, newPath, __LINE__);
+		fclose(fpout);
+		fpout = NULL;
+		fpout = fopen(newPath, "a+");
+		if(NULL == fpout){
+			printf("[%s]:info=%s outpath=%s LINE:%d\n", __func__, strerror(errno), outpath, __LINE__);
+			return -1;
+		}
+		if(0>fseek(fpin, file_size, SEEK_SET)){
+			printf("[%s]:info=%s LINE:%d\n", __func__, strerror(errno), __LINE__);
+			return -1;
+		}
+		file_size = 0;
+	}
+	
+
+	return 0;
+}
+
+
+int tttt()
+{
+	char inpath[64] = {"./src.txt"};
+	char outpath[64] = {"./out.txt"};
+	int begin = 0;
+	int size = 1024*1024*9;
+	
+	demo_cave_file(inpath, outpath, begin, size);
+	return 0;
+}
+#endif
 
