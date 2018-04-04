@@ -300,6 +300,74 @@ int getLocalAddr(int fd)
 	return 0;
 }
 
+#if 1 /*虚函数的使用*/
+class  animal
+{
+	public:
+		animal(){
+			name = "animal";
+			std::cout<<"["<<__func__<<"]:"<<__LINE__<<std::endl;
+		}
+		~ animal(){
+			std::cout<<"["<<__func__<<"]:"<<__LINE__<<std::endl;
+		}
+		
+		virtual int printName(){
+			std::cout<<__LINE__<<"["<<__func__<<"]:name="<<name<<std::endl;
+			return 0;
+		}
+		int sowName(){
+			printName();
+			return 0;
+		}
+		
+	private:
+	string name;
+};
+
+class dog:public animal
+{
+	public:
+		dog(){
+			name = "dog";
+			std::cout<<"["<<__func__<<"]:"<<std::endl;
+		}
+		~ dog(){
+			std::cout<<"["<<__func__<<"]:"<<std::endl;
+		}
+		
+		virtual int printName(){
+			std::cout<<__LINE__<<"["<<__func__<<"]:name="<<name<<std::endl;
+			return 0;
+		}
+		
+	private:
+	string name;	
+};
+
+class cat:public animal
+{
+	public:
+		cat(){
+			name = "cat";
+			std::cout<<"["<<__func__<<"]:"<<std::endl;
+		}
+		~ cat(){
+			std::cout<<"["<<__func__<<"]:"<<std::endl;
+		}
+		
+		virtual int printName(){
+			std::cout<<__LINE__<<"["<<__func__<<"]:name="<<name<<std::endl;
+			return 0;
+		}
+		
+	private:
+	string name;
+
+};
+
+#endif
+
 int main(int argc, const char *argv[])
 {
 #if 0
@@ -385,7 +453,27 @@ int main(int argc, const char *argv[])
 #endif
 
 	//useUnorderedMap(); /*unordered_map对象的使用*/
-	test_share_ptr(); /*智能指针的使用*/
+	//test_share_ptr(); /*智能指针的使用*/
+#if 0	
+	dog mydog;
+	cat mycat;
+	mydog.sowName();
+	usleep(200*1000);
+	mycat.sowName();
+#endif
+
+#if 1 //将字符串根据长度打成多串
+	int tmpLen = 5, i = 0;
+	char temp[6] = {0}, *p = NULL, *q = NULL;
+	char cmdline[1024] = {"1234567888888888888888888888888888889"};
+	p = cmdline;
+	for(i=0; i<=(strlen(cmdline)/tmpLen); i++){
+		memset(temp, 0, sizeof(temp));
+		q = p + (i*tmpLen);
+		memcpy(temp, q, tmpLen);
+		printf("%s\n", temp);
+	}
+#endif
 
 	return 0;
 }
