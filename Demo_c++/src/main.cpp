@@ -23,6 +23,11 @@
 //using std::vector;
 #endif
 
+#if 1
+#define MBUFFER_SIZE 1024
+#endif
+
+
 typedef unsigned char uint8_t;
 typedef signed char int8_t;
 
@@ -368,6 +373,61 @@ class cat:public animal
 
 #endif
 
+#if 1
+/***********************************
+* Brief：将数据组装到固定长度
+* in param inData：长度必须小于等于1024个字节
+* out param dest:长度一定不能小于2048个字节
+* return 0<出错， 0>组装好的字符串的长度;
+***********************************/
+int myStrcatHex(const unsigned     char *inData, int inDataLen, unsigned char *dest, int len){		
+	static int outDataLen = 0, ret = 0, nextDataLen = 0;
+	static unsigned char outdata[32768] = {0};
+	static unsigned char nextData[32768] = {0};
+	unsigned char *p = NULL, *q = NULL;	
+	
+	if((NULL==inData) || (len<inDataLen)){
+		printf("[%s][Error]:inData is null or size wrong len=%d inDataLen=%d line:%d\n", __func__, len, inDataLen, __LINE__);
+		return -1;
+	}
+
+	if(0 == outDataLen){
+		memset(outdata, 0, outDataLen);
+	}
+
+	/*拼装装上一次残留的数据*/
+	if(0 < nextDataLen){
+		memcpy(outdata, nextData, nextDataLen);
+		outDataLen += nextDataLen;
+		nextDataLen = 0;
+	}
+	
+	p = outdata;
+	q = p+outDataLen;
+	memcpy(q, inData, inDataLen);
+	outDataLen += inDataLen;
+	ret = outDataLen;
+	//memcpy(dest, outdata, outDataLen);
+	memcpy(dest, outdata, len);
+	
+	/*缓存区超过限长，不再向缓存区添加数据*/
+	printf("[%s]:len=%d-%d nextDataLen=%d line:%d\n", __func__, len , outDataLen, nextDataLen, __LINE__);
+	if(len <= outDataLen){
+		nextDataLen = outDataLen - len;
+		p = outdata;
+		q = p + len;
+		//printf("[%s]:q=%s line:%d\n", __func__, q, __LINE__);
+		memset(nextData, 0, 32768);
+		memcpy(nextData, q, nextDataLen);
+		memset(outdata, 0, outDataLen);
+		outDataLen = 0;
+	}
+	
+	return ret;
+}
+
+#endif
+
 int main(int argc, const char *argv[])
 {
 #if 0
@@ -462,7 +522,7 @@ int main(int argc, const char *argv[])
 	mycat.sowName();
 #endif
 
-#if 1 //将字符串根据长度打成多串
+#if 0 //将字符串根据长度打成多串
 	int tmpLen = 5, i = 0;
 	char temp[6] = {0}, *p = NULL, *q = NULL;
 	char cmdline[1024] = {"1234567888888888888888888888888888889"};
@@ -473,6 +533,24 @@ int main(int argc, const char *argv[])
 		memcpy(temp, q, tmpLen);
 		printf("%s\n", temp);
 	}
+#endif
+
+#if 1 /*将数拼装成固定的长度*/
+	int i = 0, ret = 0, outLen = 11;
+	unsigned char inData[32] = {"hello"}, outData[1024] = {0};
+	for(i = 0; i<10; i++){
+		ret = myStrcatHex(inData, strlen((char*)inData), outData, outLen);
+		//ret = myStrcatHex(inData, 5, outData, 11);
+		if(outLen < ret){
+			printf("[%s]:outdata=%s line:%d\n", __func__, outData, __LINE__);
+		}
+		
+	}
+	//printf("[%s][merlin]:outdata=%s line:%d\n", __func__, outData, __LINE__);
+#endif
+
+#if 0
+	readAndWriteData();
 #endif
 
 	return 0;
