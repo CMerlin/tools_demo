@@ -428,6 +428,56 @@ int myStrcatHex(const unsigned     char *inData, int inDataLen, unsigned char *d
 
 #endif
 
+
+#if 1 //TS数据包的解析
+typedef struct _tsHead{
+	unsigned char sync; /*8b TS同步字节 固定是0X47*/
+	unsigned char TPE; /*1b 传输数据包差错指示*/
+	unsigned char PUS; /*1b 净荷单元起始指示*/
+	unsigned char TSP; /*1b 传送优先权*/
+	int PID; /*13b 包标识符*/
+	unsigned char TPSC; /*2b 传送加扰控制*/
+	unsigned char AFC; /*2b 调整字段控制*/
+	unsigned char CT; /*4b 连续记数器 */
+} TS_HEAD, *P_TS_HEAD;
+
+/********************************************
+* brief:解析TS数据包的包头（4byte）
+* in param phead:包头
+* out param pdest:解析好的数据
+**********************************************/
+int parseTSHead(unsigned char *phead, TS_HEAD *pdest){
+	//if(0x47 != phead[0]) return -1;
+	unsigned char cData = '\0';
+
+	memset(pdest, 0, sizeof(TS_HEAD));
+	pdest->sync = phead[0];
+	pdest->TPE = (phead[1] & 0x80) >> 7;
+	pdest->PUS = (phead[1] & 0x40) >> 6;
+	pdest->TSP = (phead[1] & 0x20) >> 5;
+	/*PID 13b*/
+	cData = phead[1] << 4;
+	pdest->PID = cData;
+	pdest->PID = (pdest->PID) << 4;
+	pdest->PID = (pdest->PID) | phead[2];
+	pdest->TPSC = (phead[3] & 0xC0) >> 6;
+	pdest->AFC = (phead[3] & 0x30) >> 4;
+	pdest->CT = ((phead[3] << 4) & 0xF0) >> 4;
+	printf("[%s]:TS_head=%X %X %X %X %X %X %X %X\n", __func__, (pdest->sync), (pdest->TPE), (pdest->PUS), (pdest->TSP), (pdest->PID), (pdest->TPSC), (pdest->AFC), (pdest->CT));
+	return 0;
+}
+
+#endif
+
+int printBufData(unsigned char *pdata){
+	int intData = 0;
+
+	intData = pdata[1] + 1;
+	printf("[%s]:intData=%d(%X) line:%d\n", __func__, intData, intData, __LINE__);
+	
+	return 0;
+}
+
 int main(int argc, const char *argv[])
 {
 #if 0
@@ -535,7 +585,7 @@ int main(int argc, const char *argv[])
 	}
 #endif
 
-#if 1 /*将数拼装成固定的长度*/
+#if 0 /*将数拼装成固定的长度*/
 	int i = 0, ret = 0, outLen = 11;
 	unsigned char inData[32] = {"hello"}, outData[1024] = {0};
 	for(i = 0; i<10; i++){
@@ -549,8 +599,11 @@ int main(int argc, const char *argv[])
 	//printf("[%s][merlin]:outdata=%s line:%d\n", __func__, outData, __LINE__);
 #endif
 
-#if 0
-	readAndWriteData();
+#if 1 /*解析TS包头5byte的长度*/
+	TS_HEAD ts_head;
+	//unsigned char buffer[32] = {0x47, 0x41, 0x01, 0x30};
+	unsigned char buffer[32] = {0x47, 0x01, 0x01, 0x3C};
+	parseTSHead(buffer, &ts_head);
 #endif
 
 	return 0;
