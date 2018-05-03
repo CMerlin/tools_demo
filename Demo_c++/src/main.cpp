@@ -430,6 +430,8 @@ int myStrcatHex(const unsigned     char *inData, int inDataLen, unsigned char *d
 
 
 #if 1 //TS数据包的解析
+/*第一个TS包 = TS头 + TS自适应字段 + PES头 + PES可选头 + SEI + SPS + PPS + TS负载(IDR Frame) */
+/*TS数据包的头(TS头)*/
 typedef struct _tsHead{
 	unsigned char sync; /*8b TS同步字节 固定是0X47*/
 	unsigned char TPE; /*1b 传输数据包差错指示*/
@@ -447,7 +449,7 @@ typedef struct _tsHead{
 * out param pdest:解析好的数据
 **********************************************/
 int parseTSHead(unsigned char *phead, TS_HEAD *pdest){
-	//if(0x47 != phead[0]) return -1;
+	if(0x47 != phead[0]) return -1;
 	unsigned char cData = '\0';
 
 	memset(pdest, 0, sizeof(TS_HEAD));
@@ -467,6 +469,117 @@ int parseTSHead(unsigned char *phead, TS_HEAD *pdest){
 	return 0;
 }
 
+/*TS 数据包中解析自适应字段（TS自适应字段）*/
+typedef struct _AdaptationField{
+	unsigned char AFL; /*7b*/
+	unsigned char DI; /*1b*/
+	unsigned char RI; /*1b*/
+	unsigned char ESPI; /*1b*/
+	unsigned char PCRF; /*1b*/
+	unsigned char OPCRF; /*1b*/
+	unsigned char SPF; /*1b*/
+	unsigned char TPDF; /*1b*/
+	unsigned char AFEF; /*1b*/
+	long long int PCR; /*33b*/
+	unsigned char Reserved; /*6b*/
+	int PCRE; /*9b*/
+}ADAPTATION_FIELD, *P_ADAPTATION_FIELD;
+
+/*char 型和 long long int的转化*/
+typedef union{
+	long long int lli;
+	unsigned char buf[8];
+}U_LLI_DATA;
+
+/*char 型和int型的转化*/
+typedef union{
+	int iData;
+	unsigned char buf[4];
+}U_I_DATA;
+
+/************************************************
+* Brief：解析自适应字段(8byte)
+* In param psrc:需要解析的自适应字段数据（2byte）
+* Out param pdest:解析好的数据
+*************************************************/
+int parseAdaptationField(unsigned char *psrc, ADAPTATION_FIELD *pdest){
+	memset(pdest, 0, sizeof(ADAPTATION_FIELD));
+	pdest->AFL = psrc[0];
+	pdest->DI = (psrc[1] & 0x80) >> 7;
+	pdest->RI = (psrc[1] & 0x40) >> 6;
+	pdest->ESPI = (psrc[1] & 0x20) >> 5;
+	pdest->PCRF = (psrc[1] & 0x10) >> 4;
+	pdest->OPCRF = (psrc[1] & 0x8) >> 3;
+	pdest->SPF = (psrc[1] & 0x4) >> 2;
+	pdest->TPDF = (psrc[1] & 0x2) >> 1;
+	pdest->AFEF = (psrc[1] & 0x1);
+	/*PCR*/
+	U_LLI_DATA udata;
+	udata.lli = 0;
+	udata.buf[6] = 0x00;
+	udata.buf[7] = 0x00;
+	udata.buf[5] = psrc[2];
+	udata.buf[4] = psrc[3];
+	udata.buf[3] = psrc[4];
+	udata.buf[2] = psrc[5];
+	udata.buf[1] = psrc[6];
+	udata.buf[0] = psrc[7];
+	for(int i=0; i<sizeof(udata.lli); i++){printf("%X ", (udata.buf[i]));} printf(" value=%lld\n", (udata.lli));
+	udata.lli = udata.lli >> 15;
+	pdest->PCR = udata.lli;
+	return 0;
+}
+
+/*解析PES head的定义（PES头）*/
+typedef struct _PES_head{
+	int PSCP; /*3byte PES 固定的三个字节都是 00 00 01*/
+	unsigned char SID; /*1byte 表示此包数据的类型，是音频or视屏*/
+	int PPL; /*2byte 此PES包的长度*/
+	long long int pts;
+	long long int dts;
+} PES_HEAD, *P_PES_HEAD;
+
+/************************************************
+* Brief：解析PES head(6byte)
+* In param psrc:需要解析的PES head（6byte）
+* Out param pdest:解析好的数据
+*************************************************/
+int parsePESHead(unsigned char *psrc, PES_HEAD * pdest){
+	U_I_DATA uIdata;
+
+	memset(pdest, 0, sizeof(PES_HEAD));
+#if 0 /*PES的 开始三个字节都是 00 000 01*/
+	uIdata.iData = 0;
+	uIdata.buf[2] = psrc[0];
+	uIdata.buf[1] = psrc[1];
+	uIdata.buf[0] = psrc[2];
+	pdest->PSCP = uIdata.iData;
+#endif
+	pdest->SID = psrc[3]; /*表示此包数据的类型，是音频or视屏*/
+	uIdata.iData = 0;
+	uIdata.buf[1] = psrc[4];
+	uIdata.buf[0] = psrc[5];
+	pdest->PPL = uIdata.iData;
+	/*PTS*/
+	if(psrc[7]&0x80){
+		pdest->pts = ((long long int)(psrc[9]&0x0e ) << 29)|
+			(long long int)(psrc[10] << 22)|
+			((long long int)(psrc[11]&0xfe) << 14)|
+			(long long int)(psrc[12] << 7)|
+			(long long int)(psrc[12] >> 1);
+	}
+
+	/*PDS*/
+	if( psrc[7]&0x40){
+             pdest->dts = ((long long int)(psrc[14]&0x0e ) << 29)|
+			 	(long long int)(psrc[15] << 22)|
+			 	((long long int)(psrc[16]&0xfe) << 14)|
+			 	(long long int)(psrc[17] << 7)|
+			 	(long long int)(psrc[18] >> 1);
+	}
+	printf("%X %X %X pts=%lld dts=%lld\n", (pdest->PSCP), (pdest->SID), (pdest->PPL), (pdest->pts), (pdest->dts));
+	return 0;
+}
 #endif
 
 int printBufData(unsigned char *pdata){
@@ -602,9 +715,18 @@ int main(int argc, const char *argv[])
 #if 1 /*解析TS包头5byte的长度*/
 	TS_HEAD ts_head;
 	//unsigned char buffer[32] = {0x47, 0x41, 0x01, 0x30};
-	unsigned char buffer[32] = {0x47, 0x01, 0x01, 0x3C};
-	parseTSHead(buffer, &ts_head);
+	//unsigned char buffer[32] = {0x47, 0x01, 0x01, 0x3C};
+	//parseTSHead(buffer, &ts_head);
+	//unsigned char buffer[32] = {0x07, 0x10, 0x00, 0x07, 0x24, 0x00, 0x7E, 0x00};
+	ADAPTATION_FIELD adapta_field;
+	//parseAdaptationField(buffer, &adapta_field);
+	PES_HEAD pes_head;
+	unsigned char buffer[32] = {0x00, 0x00, 0x01, 0xE0, 0x00, 0x00};
+	parsePESHead(buffer, &pes_head);
+	//long long int lli = 0;
+	//printf("lliSize=%d\n", sizeof(lli));
 #endif
 
 	return 0;
 }
+
