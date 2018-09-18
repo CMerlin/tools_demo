@@ -591,6 +591,49 @@ int printBufData(unsigned char *pdata){
 	return 0;
 }
 
+#if 1
+#include <sys/types.h>
+#include <dirent.h>
+long int pidByName(char* pidName){
+    DIR *dir;
+	FILE *status;
+    struct dirent *next;
+	long int ret = 0;
+	char filename[512] = {0}, buffer[512] = {0},  name[512] = {0};
+
+	/*proc中包括当前的进程信息,读取该目录*/
+    dir = opendir("/proc");
+	if(NULL == dir){
+		printf("[%s][%d][Error]:info=%s\n", __func__, __LINE__, strerror(errno));
+		return -1;
+	}
+	while ((next = readdir(dir)) != NULL){
+		if (strcmp(next->d_name, "..") == 0){
+			continue;
+		}
+		if (!isdigit(*next->d_name)){
+			continue; /* If it isn't a number, we don't want it */
+		}
+		sprintf(filename, "/proc/%s/status", next->d_name);
+		if (!(status = fopen(filename, "r"))){
+            continue;
+        }
+        if (fgets(buffer, sizeof(buffer), status) == NULL) {
+            fclose(status);
+            continue;
+        }
+        fclose(status);
+        sscanf(buffer, "%*s %s", name);  /* Buffer should contain a string like "Name:   binary_name" */
+        if (strcmp(name, pidName) == 0) {
+            ret = strtol(next->d_name, NULL, 0);
+			printf("[%s][%d]:pidData=%ld\n", __func__, __LINE__, ret);
+			return  ret; /*返回目标进程号*/
+        }
+    }
+    return 0;
+}
+#endif
+
 int main(int argc, const char *argv[])
 {
 #if 0
@@ -712,7 +755,7 @@ int main(int argc, const char *argv[])
 	//printf("[%s][merlin]:outdata=%s line:%d\n", __func__, outData, __LINE__);
 #endif
 
-#if 1 /*解析TS包头5byte的长度*/
+#if 0 /*解析TS包头5byte的长度*/
 	TS_HEAD ts_head;
 	//unsigned char buffer[32] = {0x47, 0x41, 0x01, 0x30};
 	//unsigned char buffer[32] = {0x47, 0x01, 0x01, 0x3C};
@@ -725,6 +768,12 @@ int main(int argc, const char *argv[])
 	parsePESHead(buffer, &pes_head);
 	//long long int lli = 0;
 	//printf("lliSize=%d\n", sizeof(lli));
+#endif
+
+#if 1
+	char proName[32] = {"printInfo"};
+	printf("[%s][%d]:pid=%d\n", __func__, __LINE__, getpid());
+	pidByName(proName);
 #endif
 
 	return 0;
