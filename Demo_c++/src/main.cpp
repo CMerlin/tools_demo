@@ -594,6 +594,11 @@ int printBufData(unsigned char *pdata){
 #if 1
 #include <sys/types.h>
 #include <dirent.h>
+/*****************************
+* Brief：通过进程名称获取进程号
+* In param：pidName-进程名称
+* out param：pidName对应的进程号
+*****************************/
 long int pidByName(char* pidName){
     DIR *dir;
 	FILE *status;
@@ -632,6 +637,49 @@ long int pidByName(char* pidName){
     }
     return 0;
 }
+#endif
+
+#if 1
+#include <sys/time.h>  
+#include <stdio.h>  
+#include <sys/types.h>  
+#include <sys/stat.h>  
+#include <fcntl.h>  
+#include <assert.h>
+
+int useSelcet(){  
+	int keyboard = 0, ret = 0,i = 0;
+	char bufData[64] = {0};
+	fd_set readfd;
+	struct timeval timeout;
+	keyboard = open("/dev/tty",O_RDONLY | O_NONBLOCK);
+	if(0 > keyboard){
+		printf("[%s][%d]:info=%s\n", __func__, __LINE__, strerror(errno));
+		return -1;
+	}
+	//assert(keyboard>0);
+	while(1){
+		timeout.tv_sec=1;
+		timeout.tv_usec=0;
+		FD_ZERO(&readfd);
+		FD_SET(keyboard,&readfd);
+		ret=select(keyboard+1,&readfd,NULL,NULL,&timeout);
+		printf("[%s][%d]:ret=%d\n", __func__, __LINE__, ret);
+		if(FD_ISSET(keyboard,&readfd)){
+			i=read(keyboard,bufData, 1024);
+			if(0 >= i){
+				printf("[%s][Error][%d]:info=%s\n", __func__, __LINE__, strerror(errno));
+				continue;
+			}
+			printf("[%s][%d]:in bufData=%s/n", __func__, __LINE__, bufData);
+			if (NULL != strstr(bufData, "quit")){
+				break;
+			}
+		}
+	}
+	return 0;
+}
+
 #endif
 
 int main(int argc, const char *argv[])
@@ -770,11 +818,12 @@ int main(int argc, const char *argv[])
 	//printf("lliSize=%d\n", sizeof(lli));
 #endif
 
-#if 1
+#if 0
 	char proName[32] = {"printInfo"};
 	printf("[%s][%d]:pid=%d\n", __func__, __LINE__, getpid());
 	pidByName(proName);
 #endif
+	useSelcet();
 
 	return 0;
 }
