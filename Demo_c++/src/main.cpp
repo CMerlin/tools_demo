@@ -640,6 +640,56 @@ long int pidByName(char* pidName){
 #endif
 
 #if 1
+#include <sys/types.h>
+#include <sys/socket.h>
+//#include <linux/tcp.h>
+#include <linux/types.h>
+#include <asm/byteorder.h>
+#include <linux/ip.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+
+int socketOK(int sock){
+	struct tcp_info info;
+	int len=sizeof(info);
+
+	memset(&info, 0, sizeof(info));
+	getsockopt(sock, IPPROTO_TCP, TCP_INFO, &info, (socklen_t*)&len);
+		  //info.tcpi_state==TCP_ESTABLISHED
+	//if((info.tcpi_state==1)||(info.tcpi_state==8)){
+	if((info.tcpi_state==TCP_ESTABLISHED)){
+		printf("[%s][%d]:connect!\n", __func__, __LINE__);
+		return 1;
+	}else{
+		printf("[%s][%d]:disconnect!\n", __func__, __LINE__);
+		return 0;
+	}
+	return 0;
+}
+
+int setNetAttr(int sFd){
+	int keepAlive = 1, keepIdle = 10, keepInterval = 3, keepCount = 2;
+	/*开启keepalive功能*/
+	if(0 > setsockopt(sFd,SOL_SOCKET,SO_KEEPALIVE,(void*)&keepAlive,sizeof(keepAlive))){
+		printf("[%s][%d][Error]:info=%s\n", __func__, __LINE__, strerror(errno));
+	}
+	/*如果连接在X秒内没有任何数据往来。则进行探测*/
+	if(0 > setsockopt(sFd,SOL_TCP,TCP_KEEPIDLE,(void   *)&keepIdle,sizeof(keepIdle))){
+		printf("[%s][%d][Error]:info=%s\n", __func__, __LINE__, strerror(errno));
+	}
+	/*探测时发包的时间间隔*/
+	if(0 > setsockopt(sFd,SOL_TCP,TCP_KEEPINTVL,(void   *)&keepInterval,sizeof(keepInterval))){
+		printf("[%s][%d][Error]:info=%s\n", __func__, __LINE__, strerror(errno));
+	}
+	/*探测尝试的尝试次数,如果第一次探测有回应，不再进行探测*/
+	if(0 > setsockopt(sFd,SOL_TCP,TCP_KEEPCNT,(void	 *)&keepCount,sizeof(keepCount))){
+		printf("[%s][%d][Error]:info=%s\n", __func__, __LINE__, strerror(errno));
+	}
+	return 0;
+}
+#endif
+
+#if 1
 #include <sys/time.h>  
 #include <stdio.h>  
 #include <sys/types.h>  
@@ -824,6 +874,8 @@ int main(int argc, const char *argv[])
 	pidByName(proName);
 #endif
 	useSelcet();
+	//socketFdAttr();
+	socketOK(5);
 
 	return 0;
 }
