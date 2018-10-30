@@ -732,6 +732,38 @@ int useSelcet(){
 
 #endif
 
+#if 1
+/****************************************************************************
+* Brief:在一段内存区中，查找目标字符串
+* in:ps-源字符串， ds-目标字符串 sLen-源字符串的长度 dLen-目标字符串的长度
+* return:-1-失败 0>-目标字符串出现的位置
+****************************************************************************/
+int memchr_str(const char *ps, const char *ds, int sLen, int dLen){
+	unsigned int i = 0, j = 0;
+	if((NULL==ps) || (NULL==ds) || (dLen>sLen)){
+		return -1;
+	}
+	for(i=0; i<=sLen; i++){
+		if (ps[i] == ds[j]){
+			j++;
+			continue;
+		}
+		if (j == dLen){
+			break;
+		}
+		j = 0;
+	}
+	if (j == dLen){
+		printf("[%d]:\n", __LINE__);
+		return (i-dLen); /*Find the target string */
+	}else{
+		printf("[%d]:\n", __LINE__);
+		return -1;
+	}
+	return 0;
+}
+#endif
+
 int main(int argc, const char *argv[])
 {
 #if 0
@@ -873,10 +905,19 @@ int main(int argc, const char *argv[])
 	printf("[%s][%d]:pid=%d\n", __func__, __LINE__, getpid());
 	pidByName(proName);
 #endif
+#if 0
 	useSelcet();
 	//socketFdAttr();
 	socketOK(5);
-
+#endif
+#if 1
+	char buffer[64] = {"helloworld thisis"}, str[32] = {"wor"};
+	buffer[3] = '\0';
+	buffer[2] = '\n';
+	//memchr_str(buffer, str, 64);
+	//FindSubstring(buffer, str, 64, 3);
+	memchr_str(buffer, str, 64, 3);
+#endif
 	return 0;
 }
 
