@@ -112,6 +112,42 @@ class Test
 			std::cout<<"["<<__func__<<"]:str="<<str<<std::endl;	
 		}
 };
+
+class Test1:public Test
+{
+	public:
+		Test1(){};
+		~Test1(){};
+		int setvalData(int val){
+			i = val;
+		}
+		private:
+		int i;
+};
+
+struct Test2 : public Test1 {
+    Test2(){
+		std::cout<<"["<<__func__<<"]"<<"["<<__LINE__<<"]"<<std::endl;;
+	};
+
+    int setvalData(int val){
+			_val = val;
+		}
+
+private:
+	int _val;
+};
+
+int testClass1(){
+	Test1 *t1 = new Test1();
+	t1->print();
+	return 0;
+}
+
+int testClass2(){
+	struct Test2 * t2 = new Test2;
+}
+
 #endif
 
 #if 0
@@ -764,6 +800,290 @@ int memchr_str(const char *ps, const char *ds, int sLen, int dLen){
 }
 #endif
 
+#if 1 /**********************************************/
+
+typedef struct sdata{
+	int data;
+	char *ptr;
+	char arr[32];
+} SDATA, *P_SDATA;
+
+typedef struct _sdata1{
+	SDATA sdata;
+	int idata;
+} SDATA1, *P_SDATA1;
+
+int test1(void *param){
+	printf("[%s][%d]:\n", __func__, __LINE__);
+	return 0;
+}
+
+int test2(void *param){
+	printf("[%s][%d]:\n", __func__, __LINE__);
+	return 0;
+}
+
+void* test3(void *param){
+	printf("[%s][%d]:\n", __func__, __LINE__);
+	SDATA1 *ret = NULL;
+	ret = (SDATA1*)malloc(sizeof(SDATA1));
+	memcpy(&(ret->sdata), param, sizeof(SDATA));
+	return ret;
+}
+
+int test4(){
+	printf("[%s][%d]:\n", __func__, __LINE__);
+	SDATA sdata;
+	SDATA1 *psdata1 = NULL;
+	void *ret_str = NULL;
+	char buffer[32] = {"helloE\n"};
+	memset(&sdata, 0, sizeof(SDATA));
+	//memset(sdata1, 0, sizeof(SDATA1));
+	sprintf(sdata.arr, "%s", "hello");
+	sdata.ptr = buffer;
+	ret_str = test3(&sdata);
+	psdata1 = (SDATA1*)ret_str;
+	printf("[%s][%d]:str=%s\n", __func__, __LINE__, (psdata1->sdata.ptr));
+	
+	return 0;
+}
+#endif /*************************************************/
+
+#if 1 /*[B]:unix domain socket *******************************************************/
+#include <stdlib.h>  
+#include <stdio.h>  
+#include <stddef.h>  
+#include <sys/socket.h>  
+#include <sys/un.h>  
+#include <errno.h>  
+#include <string.h>  
+#include <unistd.h>  
+#include <ctype.h>   
+
+#define MAXLINE 80  
+ 
+//char *client_path = "client.socket";  
+//char *server_path = "server.socket";
+//#define SOCK_PATH_SERVER "./wfd_socket"
+char SOCK_PATH_SERVER[64] = {"./wfd_socket"};
+
+union UNION_LONG{
+	unsigned char buf[8];
+	long val;
+};
+
+int unix_doma_server(void)  
+{  
+    struct sockaddr_un serun, cliun;  
+    socklen_t cliun_len;  
+    int listenfd, connfd, size;  
+    char buf[MAXLINE];  
+    int i, n;  
+ 
+    if ((listenfd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0) {  
+        perror("socket error");  
+        exit(1);  
+    }  
+ 
+    memset(&serun, 0, sizeof(serun));  
+    serun.sun_family = AF_UNIX;  
+    strcpy(serun.sun_path, SOCK_PATH_SERVER);  
+    size = offsetof(struct sockaddr_un, sun_path) + strlen(serun.sun_path);  
+    unlink(SOCK_PATH_SERVER);  
+    if (bind(listenfd, (struct sockaddr *)&serun, size) < 0) {  
+        perror("bind error");  
+        exit(1);  
+    }  
+    printf("UNIX domain socket bound\n");  
+      
+    if (listen(listenfd, 20) < 0) {  
+        perror("listen error");  
+        exit(1);          
+    }  
+    printf("Accepting connections ...\n");  
+ 
+    while(1) {  
+        cliun_len = sizeof(cliun);         
+        if ((connfd = accept(listenfd, (struct sockaddr *)&cliun, &cliun_len)) < 0){  
+            perror("accept error");  
+            continue;  
+        }  
+          
+        while(1) {
+			memset(buf, 0, strlen(buf));
+			n = read(connfd, buf, sizeof(buf));  
+            if (n < 0) {  
+                perror("read error");  
+                break;  
+            } else if(n == 0) {  
+                printf("EOF\n");  
+                break;  
+            }
+			UNION_LONG udata;
+			//sprintf(udata.buf, "%s", buf);
+			//strcpy((char*)udata.buf, buf);
+			udata.buf[0] = buf[0];
+			udata.buf[1] = buf[1];
+			udata.buf[2] = buf[2];
+			udata.buf[3] = buf[3];
+			udata.buf[4] = buf[4];
+			udata.buf[5] = buf[5];
+			udata.buf[6] = buf[6];
+			udata.buf[7] = buf[7];
+			printf("[%s][%d][%d]:received: %s\n", __func__, __LINE__, n, buf);
+			printf("[%s][%d][%d]:received: %ld long_size=%ld\n", __func__, __LINE__, n, udata.val, sizeof(long));
+			
+            for(i = 0; i < n; i++) {  
+                buf[i] = toupper(buf[i]);  
+            }  
+            write(connfd, buf, n);  
+        }  
+        close(connfd);  
+    }  
+    close(listenfd);  
+    return 0;  
+}
+
+#if 0 /************************************************************************/
+int connectSerLocal(int *file){
+	if(NULL == file){
+		printf("[%s][%d][Er]:input param is error\n", __func__, __LINE__);
+		return -1;
+	}
+	struct  sockaddr_un serun;
+	int ret = socket(AF_UNIX, SOCK_STREAM, 0);
+	if(0 > ret){
+		printf("[%s][%d][Er]:info=%s\n", __func__, __LINE__, strerror(errno));
+		return -1;
+	}
+
+	memset(&serun, 0, sizeof(serun));  
+    serun.sun_family = AF_UNIX;  
+    strcpy(serun.sun_path, SOCK_PATH_SERVER);  
+    int len = offsetof(struct sockaddr_un, sun_path) + strlen(serun.sun_path);  
+    if (connect(sockfd, (struct sockaddr *)&serun, len) < 0){  
+        printf("[%s][%d][Er]:info=%s\n", __func__, __LINE__, strerror(errno));  
+		return -1;
+    }
+	(*file) = ret;
+	return 0;
+}
+
+int sendCmdToLocal(int *file){
+	unsigned char buffer[32] = {0};
+	if(0 > write(sockfd, buffer, strlen(buffer))){
+		printf("[%s][%d][Er]:info=%s\n", __func__, __LINE__, strerror(errno));
+		return -1;
+	}
+	return 0;
+}
+#endif /************************************************************************/
+
+#if 1 /**********************************************************/
+//#define SOCK_PATH_SERVER "/data/data/wfd_socket"
+int serFileDomain = -1;
+int connectLocalFile(){
+	struct sockaddr_un serun;
+	if(0 < serFileDomain){
+		close(serFileDomain);
+		serFileDomain = -1;
+	}
+	int sockfd = socket(AF_UNIX, SOCK_STREAM, 0);
+	if(0 > sockfd){
+		printf("[WD_M][%s][%d][Er]:info=%s\n", __func__, __LINE__, strerror(errno));
+		return -1;
+	}
+	//unsigned char server_file[64] = {"/data/data/wfd_socket"};
+	unsigned char server_file[64] = {"./wfd_socket"};
+	memset(&serun, 0, sizeof(serun));  
+    serun.sun_family = AF_UNIX;
+	//strcpy(serun.sun_path, server_file);
+	strcpy(serun.sun_path, SOCK_PATH_SERVER);
+	
+	//serun.sun_len = sizeof(serun);
+	//strcpy(serun.sun_path, SOCK_PATH_SERVER);  
+    int len = offsetof(struct sockaddr_un, sun_path) + strlen(serun.sun_path);
+    if (connect(sockfd, (struct sockaddr *)&serun, len) < 0){
+	//if(0 > connect(sockfd, (struct sockaddr*) &serun, serun.sun_len)){
+		printf("[WD_M][%s][%d][Er]:info=%s path=%s\n", __func__, __LINE__, strerror(errno), (serun.sun_path));
+		close(sockfd);
+		return -1;
+    }
+	serFileDomain = sockfd;
+	return 0;
+}
+
+int sendCmdGetIdr(){
+	if(0 > serFileDomain){
+		if(0 > connectLocalFile()){
+			printf("[WD_M][%s][%d][Er]:connect to server failed\n", __func__, __LINE__);  
+			return -1;
+		}
+	}
+	unsigned char buffer[32] = {0};
+	long cmd = 0x1234;
+	if(0 > write(serFileDomain, &cmd, sizeof(cmd))){
+		printf("[WD_M][%s][%d][Er]:info=%s\n", __func__, __LINE__, strerror(errno));
+		return -1;
+	}
+	return 0;
+}
+#endif /**********************************************************/
+
+
+int unix_doma_client() {
+	while(1){
+		sendCmdGetIdr();
+		sleep(6);
+	}
+	#if 0 /**************************************/
+    struct  sockaddr_un cliun, serun;  
+    int len;  
+    char buf[100];  
+    int sockfd, n;  
+ 
+    if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) < 0){  
+        perror("client socket error");  
+        exit(1);  
+    }  
+      
+    // 一般显式调用bind函数，以便服务器区分不同客户端  
+    memset(&cliun, 0, sizeof(cliun));  
+    cliun.sun_family = AF_UNIX;  
+    strcpy(cliun.sun_path, client_path);  
+    len = offsetof(struct sockaddr_un, sun_path) + strlen(cliun.sun_path);  
+    unlink(cliun.sun_path);  
+    if (bind(sockfd, (struct sockaddr *)&cliun, len) < 0) {  
+        perror("bind error");  
+        exit(1);  
+    }  
+ 
+    memset(&serun, 0, sizeof(serun));  
+    serun.sun_family = AF_UNIX;  
+    strcpy(serun.sun_path, server_path);  
+    len = offsetof(struct sockaddr_un, sun_path) + strlen(serun.sun_path);  
+    if (connect(sockfd, (struct sockaddr *)&serun, len) < 0){  
+        perror("connect error");  
+        exit(1);  
+    }  
+ 
+    while(fgets(buf, MAXLINE, stdin) != NULL) {    
+         write(sockfd, buf, strlen(buf));    
+         n = read(sockfd, buf, MAXLINE);    
+         if ( n < 0 ) {    
+            printf("the other side has been closed.\n");    
+         }else {    
+            write(STDOUT_FILENO, buf, n);    
+         }    
+    }   
+    close(sockfd);  
+    return 0;
+	#endif /**************************************************/
+}
+
+
+#endif /*[E]:unix domain socket *****************************************************/
+
 int main(int argc, const char *argv[])
 {
 #if 0
@@ -905,12 +1225,13 @@ int main(int argc, const char *argv[])
 	printf("[%s][%d]:pid=%d\n", __func__, __LINE__, getpid());
 	pidByName(proName);
 #endif
+
 #if 0
 	useSelcet();
 	//socketFdAttr();
 	socketOK(5);
 #endif
-#if 1
+#if 0
 	char buffer[64] = {"helloworld thisis"}, str[32] = {"wor"};
 	buffer[3] = '\0';
 	buffer[2] = '\n';
@@ -918,6 +1239,27 @@ int main(int argc, const char *argv[])
 	//FindSubstring(buffer, str, 64, 3);
 	memchr_str(buffer, str, 64, 3);
 #endif
+
+#if 0
+	//testClass1();
+	//testClass2();
+
+	//Test * tp = new Test;
+	//test4();
+	unsigned char data[32] = {0};
+	data[0] = 255;
+	//int ret = data[0] >> 6;
+	//printf("[%s][%d]:ret=%d\n", __func__, __LINE__, ret);
+	//unsigned cdata = data[0];
+	unsigned char cdata = data[0] >> 6;
+	printf("[%s][%d]:cdata=%02X %02X SJZ=%d\n", __func__, __LINE__, cdata, data[0], data[0]);	
+#endif
+
+#if 1
+	//unix_doma_client();
+	unix_doma_server();
+#endif
+
 	return 0;
 }
 
