@@ -1030,6 +1030,26 @@ int sendCmdGetIdr(){
 }
 #endif /**********************************************************/
 
+int test_strcat(){
+	int i = 0;
+	unsigned char data[32] = {"hello"};
+	unsigned char str[64] = {0}, tmp[4] = {0};
+	for(i=0; i<6; i++){
+		sprintf((char*)tmp, "%02X ", data[i]);
+		strcat((char*)str, (char*)tmp);
+	}
+	printf("[%s][%d]:str=%s\n", __func__, __LINE__, str);
+	
+	return 0;
+}
+
+int test_setBit(){
+	char data[32] = {"0"};
+	data[0] = 0x55;
+	data[10] = data[0] & 0xF;
+	printf("[%s][%d]:data=%02X\n", __func__, __LINE__, data[10]);
+	return 0;
+}
 
 int unix_doma_client() {
 	while(1){
@@ -1255,9 +1275,25 @@ int main(int argc, const char *argv[])
 	printf("[%s][%d]:cdata=%02X %02X SJZ=%d\n", __func__, __LINE__, cdata, data[0], data[0]);	
 #endif
 
+#if 0
+	unix_doma_client();
+	//unix_doma_server();
+#endif
+
 #if 1
-	//unix_doma_client();
-	unix_doma_server();
+	//test_strcat();
+	//test_setBit();
+	//printf("[%s][%d]:lszie=%d isize=%d\n", __func__, __LINE__, sizeof(long), sizeof(int));
+	U_I_DATA intData;
+	intData.iData = 270544960;
+	printf("[%s][%d]:val=%d buf=%02X %02X %02X %02X\n", __func__, __LINE__, (intData.iData), (intData.buf[0]), (intData.buf[1]), (intData.buf[2]), (intData.buf[3]));
+	unsigned int rtp_val = ntohl(intData.iData);
+	intData.iData = rtp_val;
+	printf("[%s][%d]:val=%d rtp_val=%d buf=%02X %02X %02X %02X\n", __func__, __LINE__, (intData.iData), rtp_val, (intData.buf[0]), (intData.buf[1]), (intData.buf[2]), (intData.buf[3]));
+	unsigned int hdata = htonl(intData.iData);
+	intData.iData = hdata;
+	printf("[%s][%d]:val=%d buf=%02X %02X %02X %02X\n", __func__, __LINE__, (intData.iData), (intData.buf[0]), (intData.buf[1]), (intData.buf[2]), (intData.buf[3]));
+
 #endif
 
 	return 0;
