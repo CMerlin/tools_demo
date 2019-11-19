@@ -5,8 +5,25 @@
 
 #include <sys/time.h>
 
-#include <chrono>
+//#include <chrono>
 #include <memory>
+#include <errno.h>
+#include <stdlib.h>
+
+//#include "utils_ffmpeg.h"
+
+
+#if 1 /*Use c library functions************************************/
+#ifdef __cplusplus
+extern "C" {
+#endif
+//#include "net_attr.h"
+#include "utils.h"
+
+#ifdef __cplusplus
+}
+#endif
+#endif /***********************************************************/
 
 #if 0
 #include <time.h>
@@ -195,7 +212,7 @@ int getCurTime(char *systime)
 	return 0;
 }
 
-#if 1
+#if 0
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -269,7 +286,7 @@ void useUnorderedMap(){
 
 #endif
 
-#if 1 /*智能指针和weak_ptr的使用*/
+#if 0 /*智能指针和weak_ptr的使用*/
 int test_share_ptr()
 {
 	//Test 
@@ -1295,6 +1312,8 @@ int main(int argc, const char *argv[])
 	printf("[%s][%d]:val=%d buf=%02X %02X %02X %02X\n", __func__, __LINE__, (intData.iData), (intData.buf[0]), (intData.buf[1]), (intData.buf[2]), (intData.buf[3]));
 
 #endif
+	ufunc();
+	//ffmepg_func();
 
 	return 0;
 }

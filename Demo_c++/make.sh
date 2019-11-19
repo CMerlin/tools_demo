@@ -8,4 +8,4 @@ cmake ..
 make
 cd ..
 echo "step 2. run test program"
-cp build/bin/printInfo ./
+cp build/printInfo ./
