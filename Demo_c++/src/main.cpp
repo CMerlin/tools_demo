@@ -12,6 +12,8 @@
 
 //#include "utils_ffmpeg.h"
 
+static char TAG[32] = {"MAINFUNC"};
+
 
 #if 1 /*Use c library functions************************************/
 #ifdef __cplusplus
@@ -1121,8 +1123,109 @@ int unix_doma_client() {
 
 #endif /*[E]:unix domain socket *****************************************************/
 
+int test8(){
+	return 1;
+}
+
+int helloFunc(int test8()){
+	printf("[%s][%d]:\n", __func__, __LINE__);
+	return 0;
+}
+
+int file_fd = 3;
+pthread_mutex_t mutex_fd;
+
+int demo_fork()
+{
+	pthread_mutex_init(&mutex_fd, NULL);
+	
+	pid_t pid1 = fork();
+	if(0 < pid1){
+		printf("[Er][%s][%d]:\n", __func__, __LINE__);
+		//sleep(1);
+		//exit(0);
+		//file_fd = 6;
+	}
+	else if(0 == pid1){
+		printf("[De][%s][%d]:im child\n", __func__, __LINE__);
+		//pthread_mutex_lock(&mutex_fd);
+		file_fd = 1150;
+		usleep(10 *1000 *1000);
+		//pthread_mutex_unlock(&mutex_fd);
+	}
+	else{
+		while(1){
+			usleep(1*1000 *1000);
+			printf("[De][%s][%d]:im father file_fd=%d\n", __func__, __LINE__, file_fd);
+			//pthread_mutex_lock(&mutex_fd);
+			file_fd = 32;
+			//pthread_mutex_unlock(&mutex_fd);
+			printf("[De][%s][%d]:im father file_fd=%d\n", __func__, __LINE__, file_fd);
+		}
+	}
+
+	while(1){
+		sleep(5);
+		printf("[De][%s][%d]:im father file_fd=%d\n", __func__, __LINE__, file_fd);
+		continue;
+	}
+	return 0;
+}
+
+
+#if 1
+int MAX_BUF_SIZE = 1024 * 256;
+
+typedef struct _h264_pkg{
+    int nGOPIndex;
+    int frame_type;
+    int nFramePOC;
+    unsigned char *data;
+    int data_len;
+    unsigned int nTimeStamp;
+    /* from 1970 us */
+    unsigned long long pts;
+    int width;
+    int height;
+}S_H264_PKG, *PS_H264_PKG;
+#endif
+
+int fp_2(unsigned char *data){
+	printf("[%s][%d]:data=%s\n", __func__, __LINE__, data);
+	sprintf((char*)data, "%s", "HHhello worlf");
+	return 0;
+}
+
+int fp_1(unsigned char *data){
+	fp_2(data);
+	return 0;
+}
+
+int test_fp_data(){
+	unsigned char *pdata = NULL;
+	unsigned char buffer[32] = {"KKKKKKKK"};
+	S_H264_PKG outPkt;
+	memset(&outPkt, 0, sizeof(outPkt));
+	outPkt.data = (unsigned char*)malloc(MAX_BUF_SIZE);
+
+	sprintf((char*)outPkt.data, "%s", "hello world");
+
+	fp_1(outPkt.data);
+	//printf("[%s][%d]:\n", __func__, __LINE__);
+	printf("[%s][%d]:data=%s\n", __func__, __LINE__, outPkt.data);
+	pdata = outPkt.data;
+	printf("[%s][%d]:data=%s\n", __func__, __LINE__, pdata);
+	outPkt.data = buffer;
+	printf("[%s][%d]:data=%s\n", __func__, __LINE__, outPkt.data);
+	outPkt.data = pdata;
+	printf("[%s][%d]:data=%s\n", __func__, __LINE__, outPkt.data);
+	return 0;
+}
+
 int main(int argc, const char *argv[])
 {
+	printf("[%s][%s][%d]:argc=%d argv1=%s argv2=%s argv3=%s\n", TAG, __func__, __LINE__, argc, argv[1], argv[2], argv[3]);
+
 #if 0
 	/*输出的目标字符串前面会加上系统时间*/
 	const int TIME = 1;
@@ -1297,7 +1400,7 @@ int main(int argc, const char *argv[])
 	//unix_doma_server();
 #endif
 
-#if 1
+#if 0
 	//test_strcat();
 	//test_setBit();
 	//printf("[%s][%d]:lszie=%d isize=%d\n", __func__, __LINE__, sizeof(long), sizeof(int));
@@ -1312,9 +1415,42 @@ int main(int argc, const char *argv[])
 	printf("[%s][%d]:val=%d buf=%02X %02X %02X %02X\n", __func__, __LINE__, (intData.iData), (intData.buf[0]), (intData.buf[1]), (intData.buf[2]), (intData.buf[3]));
 
 #endif
-	ufunc();
+	//ufunc();
 	//ffmepg_func();
 
+#if 0
+	char buffer[32] = {"WORLD"};
+	char *p1 = buffer; //"HELLO";
+	char *p2 = p1;
+	printf("[%s][%d]:p2[0]=%C\n", __func__, __LINE__, p2[0]);
+	memset(buffer, 0, sizeof(buffer));
+	printf("[%s][%d]:p2[0]=%C\n", __func__, __LINE__, p2[0]);
+	helloFunc(6);
+#endif
+
+#if 0
+	//demo_fork();
+	//double dData = 1000;
+	//std::cout<<"buffer="<<dData<<" dData="<<dData<<" LINE:"<<__LINE__<<std::endl;
+	//double UpperLine = _
+
+	int ret = 2;
+	if(!ret){
+		std::cout<<"FUNC:"<<__func__<<" LINE:"<<__LINE__<<" ret="<<ret<<std::endl;
+	}else{
+		std::cout<<"FUNC:"<<__func__<<" LINE:"<<__LINE__<<" ret="<<ret<<std::endl;
+	}
+#endif
+
+#if 0
+	int data = 3, dest = 0;
+	dest = -data;
+	printf("[%s][%d]:dest=%d\n", __func__, __LINE__, dest);
+#endif
+
+	test_fp_data();
+
+	
 	return 0;
 }
 
